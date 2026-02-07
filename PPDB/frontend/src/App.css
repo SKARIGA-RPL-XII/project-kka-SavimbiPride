@@ -1,1 +1,9 @@
+@font-face {
+    font-family: 'Rubik Glitch';
+    src: url('./assets/fonts/RubikGlitch-Regular.ttf') format('truetype');
+}
 @import "tailwindcss";
+
+@theme{
+    --font-rubik-glitch: Rubik Glitch, "sans-serif";
+}

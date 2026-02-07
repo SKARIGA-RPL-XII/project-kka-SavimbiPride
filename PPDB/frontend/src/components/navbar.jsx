@@ -76,7 +76,6 @@ export default function Navbar() {
 
               {isDropdownOpen && (
                 <div className="absolute right-0 top-10 w-48 bg-[#4c1d95] shadow-xl rounded-b-lg overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
-                  {/* Tombol Profile */}
                   <button
                     onClick={() => {
                       navigate("/profile");
@@ -85,16 +84,19 @@ export default function Navbar() {
                     className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-white hover:bg-[#37166d] transition-colors"
                   >
                     <FiUser className="text-white" />
-                    <span className="font-semibold cursor-pointer">Profile</span>
+                    <span className="font-semibold cursor-pointer">
+                      Profile
+                    </span>
                   </button>
 
-                  {/* Tombol Logout */}
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-300 hover:bg-[#37166d] transition-colors border-t border-white/10"
                   >
                     <FiLogOut />
-                    <span className="font-semibold uppercase cursor-pointer">Logout</span>
+                    <span className="font-semibold uppercase cursor-pointer">
+                      Logout
+                    </span>
                   </button>
                 </div>
               )}
@@ -120,7 +122,7 @@ export default function Navbar() {
               alt="Logo"
               className="w-14 h-14 object-contain"
             />
-            <div className="flex flex-col items-center leading-tight text-white">
+            <div className="flex flex-col items-center leading-tight text-white font-barrio">
               <h1 className="text-lg font-bold tracking-[0.25em]">
                 FOCUS POINT
               </h1>

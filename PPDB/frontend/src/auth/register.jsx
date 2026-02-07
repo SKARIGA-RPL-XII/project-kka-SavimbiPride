@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoFpe from "../assets/logo_fpe.png";
 import axios from "axios";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Pastikan sudah install react-icons
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Notif from "../components/notif"; // Pastikan path import benar
 
 export default function Register() {
   const navigate = useNavigate();
@@ -15,6 +16,14 @@ export default function Register() {
     confirmPassword: "",
   });
 
+  // State untuk notifikasi
+  const [notif, setNotif] = useState({ 
+    show: false, 
+    message: "", 
+    type: "info", 
+    isSuccess: false 
+  });
+
   // State untuk toggle lihat password
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
@@ -23,12 +32,25 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleCloseNotif = () => {
+    setNotif({ ...notif, show: false });
+    // Jika registrasi sukses, arahkan ke login setelah notif ditutup
+    if (notif.isSuccess) {
+      navigate("/login");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validasi Confirm Password di Frontend
+    // Validasi Confirm Password di Frontend menggunakan Notif
     if (formData.password !== formData.confirmPassword) {
-      return alert("Password dan Konfirmasi Password tidak cocok!");
+      return setNotif({
+        show: true,
+        message: "Password dan Konfirmasi Password tidak cocok!",
+        type: "info",
+        isSuccess: false
+      });
     }
 
     try {
@@ -37,15 +59,37 @@ export default function Register() {
         email: formData.email,
         password: formData.password
       });
-      alert(res.data.message);
-      navigate("/login");
+
+      // Notif Sukses
+      setNotif({
+        show: true,
+        message: res.data.message || "Registrasi Berhasil!",
+        type: "info",
+        isSuccess: true
+      });
+
     } catch (err) {
-      alert(err.response?.data?.message || "Registrasi gagal");
+      // Notif Gagal
+      setNotif({
+        show: true,
+        message: err.response?.data?.message || "Registrasi gagal, coba lagi nanti.",
+        type: "info",
+        isSuccess: false
+      });
     }
   };
 
   return (
     <div className="flex h-screen w-full font-barrio overflow-hidden">
+      {/* Tampilkan Custom Notif */}
+      {notif.show && (
+        <Notif 
+          type={notif.type} 
+          message={notif.message} 
+          onClose={handleCloseNotif} 
+        />
+      )}
+
       {/* SISI KIRI: LOGO */}
       <div className="w-1/2 bg-[#1E1E6F] flex items-center justify-center">
         <img src={logoFpe} alt="Logo" className="w-100 h-100 object-contain opacity-80" />
@@ -78,7 +122,6 @@ export default function Register() {
             />
           </div>
 
-          {/* Input Password */}
           <div className="relative">
             <label className="text-gray-400 text-xs block mb-1">Password</label>
             <input
@@ -97,7 +140,6 @@ export default function Register() {
             </button>
           </div>
 
-          {/* Input Confirm Password */}
           <div className="relative">
             <label className="text-gray-400 text-xs block mb-1">Konfirmasi Password</label>
             <input

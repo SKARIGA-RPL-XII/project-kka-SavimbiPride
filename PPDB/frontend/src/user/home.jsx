@@ -1,10 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import Content from "../components/major";
+import SideNav from "../components/sideNav";
+import NavBar from "../components/navbar";
 
 function Landing() {
   return (
     <div className="min-h-screen bg-[#1E1E6F] font-barrio text-white flex flex-col">
 
+      <NavBar />
       <div className="flex flex-1 w-full items-start">
         
         <main className="flex-1">
@@ -15,12 +18,12 @@ function Landing() {
             <Route path="/login" element={<div className="h-screen flex items-center justify-center text-3xl">HALAMAN LOGIN</div>} />
           </Routes>
           
-          {/* Footer diletakkan di dalam main agar ikut scroll di sisi kiri saja */}
           <footer className="bg-[#000045] py-6 text-center text-[10px] opacity-50 tracking-widest">
             &copy; 2024 FOCUS POINT EDUCATION. ALL RIGHTS RESERVED.
           </footer>
         </main>
         
+<SideNav />
       </div>
     </div>
   );

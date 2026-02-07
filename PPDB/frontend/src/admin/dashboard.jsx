@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Tambahkan useEffect
 import { useNavigate } from "react-router-dom";
 import StatCard from "../components/statCard";
 import SideBar from "../components/sidebar";
 import defaultAvatar from "../assets/default-avatar.png";
 import { FiUser, FiLogOut, FiChevronDown } from "react-icons/fi";
+import axios from "axios"; // Tambahkan axios
 import { Bar } from "react-chartjs-2";
 import { 
   Chart as ChartJS, 
@@ -20,21 +21,47 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default function Dashboard() {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const adminId = localStorage.getItem("adminId");
+  const token = localStorage.getItem("token");
 
-  // Ambil data user dari localStorage
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : { username: "USER", foto: null };
+  // State User
+  const [user, setUser] = useState({ 
+    username: "USER", 
+    foto: null 
   });
 
+  // Fetch data user terbaru agar foto sinkron setelah update
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!adminId || !token) return;
+      try {
+        const res = await axios.get(`http://localhost:5000/api/admin/${adminId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUser({
+          username: res.data.username,
+          foto: res.data.foto
+        });
+        // Opsional: Update localStorage agar data login tetap terbaru
+        localStorage.setItem("user", JSON.stringify(res.data));
+      } catch (err) {
+        console.error("Gagal mengambil data user:", err);
+      }
+    };
+    fetchUserData();
+  }, [adminId, token]);
+
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
+    localStorage.clear(); // Hapus semua data
     navigate("/login");
   };
 
-  // Data dummy untuk chart
+  // --- LOGIKA URL GAMBAR ---
+  // Jika foto ada, arahkan ke folder avatars di backend, jika tidak gunakan default
+  const avatarUrl = user.foto 
+    ? `http://localhost:5000/avatars/${user.foto}` 
+    : defaultAvatar;
+
   const chartData = {
     labels: ['Figma', 'Sketch', 'XD', 'PS', 'AI', 'CorelDRAW', 'InDesign', 'Canva', 'Webflow', 'Affinity', 'Marker', 'Figma'],
     datasets: [
@@ -46,27 +73,23 @@ export default function Dashboard() {
 
   return (
     <div className="flex min-h-screen font-barrio bg-white">
-      {/* SIDEBAR */}
       <SideBar />
 
-      {/* MAIN CONTENT */}
       <div className="flex-1 flex flex-col">
-        
-        {/* TOPBAR DASHBOARD */}
         <div className="flex justify-between items-center px-8 py-4">
-          <h1 className="text-4xl font-bold tracking-tighter text-black">DATA SUMMARY</h1>
+          <h1 className="text-4xl font-bold tracking-tighter text-black uppercase">DATA SUMMARY</h1>
           
-          {/* USER PROFILE BOX WITH DROPDOWN */}
           <div className="relative">
             <div 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="bg-[#1E1E6F] text-white px-4 py-2 rounded-lg flex items-center space-x-3 shadow-md cursor-pointer hover:bg-[#2a2a8a] transition-all select-none"
             >
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/50">
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/50 bg-gray-300">
                 <img 
-                  src={user.foto || defaultAvatar} 
+                  src={avatarUrl} 
                   alt="profile" 
                   className="w-full h-full object-cover" 
+                  onError={(e) => { e.target.src = defaultAvatar; }} // Fallback jika gambar error load
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -75,46 +98,41 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* DROPDOWN MENU */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-[#1E1E6F] shadow-xl rounded-lg overflow-hidden animate-in fade-in slide-in-from-top-2 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-[#1E1E6F] shadow-xl rounded-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                 <button
-                  onClick={() => { navigate("/profile"); setIsDropdownOpen(false); }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-white hover:bg-[#37166d] transition-colors"
+                  onClick={() => { navigate("/profileA"); setIsDropdownOpen(false); }}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-white hover:bg-[#2a2a8a] transition-colors cursor-pointer"
                 >
-                  <FiUser className="text-white" />
+                  <FiUser size={18} />
                   <span className="font-semibold">Profile</span>
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-300 hover:bg-[#37166d] transition-colors border-t border-white/10"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-300 hover:bg-[#2a2a8a] transition-colors border-t border-white/10 cursor-pointer"
                 >
-                  <FiLogOut />
-                  <span className="font-semibold uppercase">Logout</span>
+                  <FiLogOut size={18} />
+                  <span className="font-semibold uppercase tracking-widest">Logout</span>
                 </button>
               </div>
             )}
           </div>
         </div>
 
+        {/* Konten sisa Dashboard tetap sama */}
         <div className="p-8">
-          <h2 className="text-2xl font-bold mb-6 text-black tracking-tight">RINGKASAN DATA</h2>
-
-          {/* STAT CARDS */}
+          <h2 className="text-2xl font-bold mb-6 text-black tracking-tight uppercase">Ringkasan Data</h2>
           <div className="flex space-x-6 mb-10">
             <StatCard title="TOTAL JURUSAN" value="15" />
             <StatCard title="TOTAL USER" value="15" />
           </div>
 
-          {/* CHART SECTION */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <Bar 
               data={chartData} 
               options={{ 
                 responsive: true, 
-                plugins: { 
-                  legend: { position: 'bottom' } 
-                } 
+                plugins: { legend: { position: 'bottom' } } 
               }} 
             />
           </div>

@@ -1,52 +1,47 @@
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 
-// ===== PAGES =====
-import Home from "./user/home";
+// page
 import Login from "./auth/login";
 import Register from "./auth/register";
-import Dashboard from "./admin/dashboard";
 import Landing from "./auth/landing";
 
-// ===== COMPONENTS =====
-import Navbar from "./components/navbar";
-import SideNav from "./components/sideNav";
+// admin
+import Dashboard from "./admin/dashboard";
+import ListJurusan from "./admin/list_jurusan";
+import TambahJurusan from "./admin/tambah_jurusan";
+import EditJurusan from "./admin/edit_jurusan";
+import ProfileAdmin from "./admin/profileA";
+
+// user 
+import Home from "./user/home";
 
 export default function App() {
-  const location = useLocation();
-
-  // halaman TANPA navbar & sidenav
-  const hideLayoutPaths = ["/login", "/register", "/dashboard"];
-
-  const hideDynamicRegex = [
-    /^\/EditAdmin\/.+$/,
-    /^\/EditMentor\/.+$/,
-    /^\/EditUser\/.+$/,
-    /^\/edit_kelas\/.+$/,
-    /^\/detail_kelas\/.+$/,
-  ];
-
-  const shouldHide =
-    hideLayoutPaths.includes(location.pathname) ||
-    hideDynamicRegex.some((regex) => regex.test(location.pathname));
-
+  
   return (
     <div className="min-h-screen bg-[#1E1E6F] text-white flex flex-col">
-      {!shouldHide && <Navbar />}
 
-      <div className="flex flex-1 w-full">
-        <main className="flex-1 bg-gray-100 text-black">
+
+      <div className="flex flex-1 w-full overflow-hidden">
+        <main className="flex-1 bg-gray-100 text-black overflow-hidden">
           <Routes>
             <Route index element={<Landing />} />
-            <Route path="/home" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* admin */}
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/list-jurusan" element={<ListJurusan />} />
+            <Route path="/tambah-jurusan" element={<TambahJurusan />} />
+            <Route path="/edit-jurusan/:id" element={<EditJurusan />} />
+            <Route path="/profileA" element={<ProfileAdmin />} />
+            
+            {/* User */}
+            <Route path="/home" element={<Home />} />
           </Routes>
         </main>
 
-        {!shouldHide && <SideNav />}
       </div>
     </div>
   );

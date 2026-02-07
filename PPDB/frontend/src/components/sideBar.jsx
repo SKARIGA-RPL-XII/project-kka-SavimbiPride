@@ -10,6 +10,7 @@ export default function SideBar() {
     { name: "LIST JURUSAN", path: "/list-jurusan" },
     { name: "DATA USER", path: "/data-user" },
     { name: "LIST USER", path: "/list-user" },
+    { name: "PEMBAYARAN", path: "/pembayaran" },
   ];
 
   return (

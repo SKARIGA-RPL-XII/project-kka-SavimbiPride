@@ -1,12 +1,14 @@
 import { Routes, Route } from "react-router-dom";
 import Content from "../components/major";
+import SideNav from "../components/sideNav";
+import NavBar from "../components/navbar";
 
 function Landing() {
   return (
     <div className="min-h-screen bg-[#1E1E6F] font-barrio text-white flex flex-col">
+      <NavBar />
 
       <div className="flex flex-1 w-full items-start">
-        
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Content />} />
@@ -20,6 +22,7 @@ function Landing() {
           </footer>
         </main>
 
+<SideNav />
       </div>
     </div>
   );

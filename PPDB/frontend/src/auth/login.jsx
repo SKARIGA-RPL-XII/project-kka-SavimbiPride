@@ -3,41 +3,62 @@ import { useNavigate } from "react-router-dom";
 import logoFpe from "../assets/logo_fpe.png";
 import axios from "axios";
 import { FaArrowLeft } from "react-icons/fa"; 
+import Notif from "../components/notif";
 
 export default function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [notif, setNotif] = useState({ show: false, message: "", type: "info", redirect: null });
 
   const handleChange = (e) => {
-    // Menghubungkan input dengan state
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleCloseNotif = () => {
+    setNotif({ ...notif, show: false });
+    if (notif.redirect) {
+      navigate(notif.redirect);
+    }
+  };
+
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Mencegah reload halaman
+    e.preventDefault();
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", formData);
       
-      // 1. Simpan Token dan Data User
       localStorage.setItem("token", res.data.token); 
       localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("adminId", res.data.user.id);
+      
+      const targetPath = res.data.user.role === "admin" ? "/dashboard" : "/home";
+      setNotif({
+        show: true,
+        message: "Login Berhasil! Selamat Datang.",
+        type: "info",
+        redirect: targetPath
+      });
 
-      alert(res.data.message);
-
-      // 2. Navigasi Berdasarkan Role
-      if (res.data.user.role === "admin") {
-        navigate("/dashboard");
-      } else {
-        navigate("/home");
-      }
     } catch (err) {
-      alert(err.response?.data?.message || "Login gagal, periksa koneksi anda.");
+      setNotif({
+        show: true,
+        message: err.response?.data?.message || "Login gagal, periksa koneksi anda.",
+        type: "info",
+        redirect: null
+      });
     }
   };
 
   return (
     <div className="flex h-screen w-full font-barrio overflow-hidden">
-      {/* SISI KIRI: FORM */}
+
+      {notif.show && (
+        <Notif 
+          type={notif.type} 
+          message={notif.message} 
+          onClose={handleCloseNotif} 
+        />
+      )}
+
       <div className="w-1/2 bg-white flex flex-col justify-center px-20 relative text-blue-900">
         <button 
           onClick={() => navigate("/")}
