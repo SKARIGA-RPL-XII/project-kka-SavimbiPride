@@ -50,14 +50,10 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Email atau Password salah!" });
         }
 
-        if (!JWT_SECRET) {
-            return res.status(500).json({ message: "JWT_SECRET tidak terdefinisi di server." });
-        }
-
         const token = jwt.sign(
             { id: user.id, role: user.role, username: user.username },
-            JWT_SECRET,
-            { expiresIn: '1d' }
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
         );
 
         return res.status(200).json({

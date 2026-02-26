@@ -8,9 +8,10 @@ export default function SideBar() {
   const menus = [
     { name: "DASHBOARD", path: "/dashboard" },
     { name: "LIST JURUSAN", path: "/list-jurusan" },
-    { name: "DATA USER", path: "/data-user" },
     { name: "LIST USER", path: "/list-user" },
+    { name: "DATA USER", path: "/list-data-user" },
     { name: "PEMBAYARAN", path: "/pembayaran" },
+    { name: "CALON SISWA", path: "/calon" },
   ];
 
   return (

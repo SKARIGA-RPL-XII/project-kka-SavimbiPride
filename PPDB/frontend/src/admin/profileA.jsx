@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCamera, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaCamera, FaEye, FaEyeSlash, FaSave } from "react-icons/fa";
 import axios from "axios";
+import Cropper from "react-easy-crop"; 
 import defaultAvatar from "../assets/default-avatar.png";
 import Notif from "../components/notif";
 
@@ -9,8 +10,10 @@ export default function ProfileAdmin() {
   const navigate = useNavigate();
   const adminId = localStorage.getItem("adminId");
   const token = localStorage.getItem("token");
+
   const [preview, setPreview] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const [notif, setNotif] = useState({
     show: false,
@@ -29,41 +32,49 @@ export default function ProfileAdmin() {
   });
 
   const showAlert = (message, type = "info") => {
-    setNotif({ show: true, message, type });
+    setNotif({
+      show: true,
+      type,
+      message,
+    });
   };
 
   const closeNotif = () => {
-    setNotif({ ...notif, show: false });
+    setNotif((prev) => ({ ...prev, show: false }));
+    setConfirmAction(null);
   };
 
   useEffect(() => {
     const fetchAdmin = async () => {
-      if (!adminId) return;
+      if (!adminId || !token) return;
+
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/admin/${adminId}`,
+          `http://localhost:5000/api/admin/profile/${adminId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },
         );
+
         setFormData((prev) => ({
           ...prev,
-          username: res.data.username,
-          email: res.data.email,
-          foto: res.data.foto,
+          username: res.data.username || "",
+          email: res.data.email || "",
+          foto: res.data.foto || "",
         }));
       } catch (err) {
         showAlert(
-          "Akses ditolak: " + (err.response?.data?.message || err.message),
+          err.response?.data?.message || "Akses ditolak atau sesi login habis",
+          "failed",
         );
       }
     };
+
     fetchAdmin();
   }, [adminId, token]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     const allowedTypes = [
@@ -73,15 +84,19 @@ export default function ProfileAdmin() {
       "image/gif",
       "image/webp",
     ];
+
     if (!allowedTypes.includes(file.type)) {
-      showAlert("Format file salah! Gunakan JPG, PNG, GIF, atau WEBP.");
+      showAlert(
+        "Format file salah! Gunakan JPG, PNG, GIF, atau WEBP.",
+        "failed",
+      );
       e.target.value = "";
       return;
     }
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      showAlert("Kegedean! Maksimal ukuran file cuma 5MB.");
+      showAlert("Maksimal ukuran file 5MB.", "failed");
       e.target.value = "";
       return;
     }
@@ -90,77 +105,78 @@ export default function ProfileAdmin() {
     setPreview(URL.createObjectURL(file));
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (formData.password && formData.password !== formData.confirmPassword) {
-      return showAlert("Konfirmasi password tidak cocok!");
+      showAlert("Konfirmasi password tidak cocok!", "failed");
+      return;
     }
+
+    setConfirmAction(() => async () => {
+      try {
+        const data = new FormData();
+        data.append("username", formData.username);
+        data.append("email", formData.email);
+
+        const isPasswordChanged = formData.password.trim() !== "";
+
+        if (isPasswordChanged) {
+          data.append("password", formData.password);
+        }
+
+        if (selectedFile) {
+          data.append("foto", selectedFile);
+        }
+
+        const res = await axios.put(
+          `http://localhost:5000/api/admin/profile/update/${adminId}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
+
+        if (isPasswordChanged) {
+          showAlert(
+            "Password berhasil diubah. Silakan login kembali.",
+            "success",
+          );
+
+          setTimeout(() => {
+            localStorage.clear();
+            navigate("/login");
+          }, 2000);
+
+          return;
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          password: "",
+          confirmPassword: "",
+          foto: res.data.foto || prev.foto,
+        }));
+
+        setPreview(null);
+        setSelectedFile(null);
+
+        showAlert("Profil berhasil diperbarui!", "success");
+      } catch (err) {
+        showAlert(
+          err.response?.data?.message || "Gagal memperbarui profil",
+          "failed",
+        );
+      }
+    });
 
     setNotif({
       show: true,
       type: "confirm",
       message: "Yakin ingin simpan perubahan?",
-      onConfirm: async () => {
-        try {
-          const data = new FormData();
-          data.append("username", formData.username);
-          data.append("email", formData.email);
-
-          // Cek apakah user mengisi password baru
-          const isPasswordChanged = formData.password !== "";
-
-          if (isPasswordChanged) {
-            data.append("password", formData.password);
-          }
-
-          if (selectedFile) {
-            data.append("foto", selectedFile);
-          }
-
-          const res = await axios.put(
-            `http://localhost:5000/api/admin/edit/${adminId}`,
-            data,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "multipart/form-data",
-              },
-            },
-          );
-
-          // LOGIKA LOGOUT OTOMATIS JIKA GANTI PASSWORD
-          if (isPasswordChanged) {
-            showAlert(
-              "Password berhasil diubah. Silakan login kembali!",
-              "info",
-            );
-
-            // Beri jeda sedikit agar user bisa membaca alert sebelum ditendang ke login
-            setTimeout(() => {
-              localStorage.clear();
-              navigate("/login");
-            }, 2000);
-
-            return; // Hentikan eksekusi kode di bawahnya
-          }
-
-          // Jika hanya update data biasa (tanpa ganti password)
-          setFormData((prev) => ({
-            ...prev,
-            password: "",
-            confirmPassword: "",
-            foto: res.data.foto,
-          }));
-
-          setPreview(null);
-          setSelectedFile(null);
-          showAlert("Profil Berhasil Diperbarui!");
-        } catch (err) {
-          showAlert(err.response?.data?.message || "Gagal memperbarui profil");
-        }
-      },
     });
   };
-
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden font-barrio">
       {notif.show && (
@@ -169,14 +185,14 @@ export default function ProfileAdmin() {
           message={notif.message}
           onClose={closeNotif}
           onConfirm={() => {
-            if (notif.onConfirm) notif.onConfirm();
+            if (confirmAction) confirmAction();
             closeNotif();
           }}
           onCancel={closeNotif}
         />
       )}
 
-      <div className="flex-1 p-8 bg-[#f5f5f5] h-full flex flex-col">
+      <div className="flex-1 p-8 bg-[#080841] h-full flex flex-col">
         <div className="bg-[#1E1E6F] p-8 rounded-3xl shadow-xl flex flex-col h-full relative overflow-hidden">
           <div className="mb-6">
             <button
@@ -185,6 +201,14 @@ export default function ProfileAdmin() {
             >
               ← kembali
             </button>
+
+            <button
+                onClick={handleUpdate}
+                className="bg-green-800 text-white px-10 py-2 rounded-full text-sm font-bold uppercase hover:bg-green-900 cursor-pointer"
+              >
+              <FaSave /> Simpan
+            </button>
+
           </div>
 
           <div className="bg-white rounded-[40px] p-8 flex gap-8 h-full">
@@ -212,12 +236,7 @@ export default function ProfileAdmin() {
                   />
                 </label>
               </div>
-              <button
-                onClick={handleUpdate}
-                className="bg-green-800 text-white px-10 py-2 rounded-full text-sm font-bold uppercase hover:bg-green-900 cursor-pointer"
-              >
-                Simpan
-              </button>
+              
             </div>
 
             <div className="w-2/3 flex flex-col gap-6">
@@ -294,12 +313,6 @@ export default function ProfileAdmin() {
                     placeholder="********"
                   />
                 </div>
-              </div>
-              <div className="bg-[#1E1E6F] p-6 rounded-[25px] flex-1">
-                <textarea
-                  className="w-full h-full bg-transparent text-white outline-none resize-none text-sm italic"
-                  placeholder="Catatan Admin"
-                ></textarea>
               </div>
             </div>
           </div>

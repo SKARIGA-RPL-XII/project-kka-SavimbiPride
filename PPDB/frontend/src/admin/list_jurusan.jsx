@@ -19,9 +19,6 @@ export default function ListJurusan() {
   const API_URL = "http://localhost:5000/api/jurusan";
   const token = localStorage.getItem("token");
 
-  /* =========================
-     FETCH DATA
-  ========================= */
   const fetchJurusan = async () => {
     try {
       setLoading(true);
@@ -39,9 +36,6 @@ export default function ListJurusan() {
     fetchJurusan();
   }, []);
 
-  /* =========================
-     SELECT CHECKBOX
-  ========================= */
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id)
@@ -50,9 +44,6 @@ export default function ListJurusan() {
     );
   };
 
-  /* =========================
-     DELETE FLOW
-  ========================= */
   const handleDelete = () => {
     setShowNotif({
       show: true,
@@ -74,7 +65,7 @@ export default function ListJurusan() {
 
       setShowNotif({
         show: true,
-        type: "info",
+        type: "success",
         message: "Data jurusan berhasil dihapus",
       });
 
@@ -84,14 +75,14 @@ export default function ListJurusan() {
       console.error("Gagal hapus jurusan:", error);
       setShowNotif({
         show: true,
-        type: "info",
+        type: "failed",
         message: "Gagal menghapus data",
       });
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 font-barrio overflow-hidden">
+    <div className="flex h-screen bg-gray-100 font-sans overflow-hidden">
       <SideBar />
 
       {showNotif.show && (
@@ -104,103 +95,108 @@ export default function ListJurusan() {
         />
       )}
 
-      <div className="flex-1 p-8 bg-[#f5f5f5] flex flex-col">
-        <div className="bg-[#1E1E6F] p-8 rounded-3xl shadow-xl flex flex-col h-full">
+      <div className="flex-1 p-8 bg-[#f5f5f5] flex flex-col overflow-hidden">
+        
+        <h1 className="text-2xl font-bold text-gray-400 mb-6 lowercase">list jurusan</h1>
+        <div className="bg-[#1E1E6F] p-8 rounded-3xl shadow-xl flex flex-col h-full overflow-hidden">
 
-          {/* HEADER */}
-          <div className="flex justify-end gap-4 mb-6">
-            <button
-              onClick={() => navigate("/tambah-jurusan")}
-              className="bg-green-600 text-white px-8 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-green-700"
-            >
-              Tambah
-            </button>
+          <div className="flex justify-between items-center mb-6">
+            <div className="text-white/50 text-xs uppercase font-bold tracking-widest bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+              Total Data: <span className="text-white">{dataJurusan.length}</span>
+            </div>
 
-            <button
-              disabled={selectedIds.length === 0}
-              onClick={handleDelete}
-              className={`px-8 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${
-                selectedIds.length
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-gray-500 text-gray-300 cursor-not-allowed opacity-50"
-              }`}
-            >
-              Hapus
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={() => navigate("/tambah-jurusan")}
+                className="bg-green-600 text-white px-8 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider hover:bg-green-700 transition-all cursor-pointer shadow-lg active:scale-95"
+              >
+                Tambah
+              </button>
+
+              <button
+                disabled={selectedIds.length === 0}
+                onClick={handleDelete}
+                className={`px-8 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-lg ${
+                  selectedIds.length
+                    ? "bg-red-600 text-white hover:bg-red-700 cursor-pointer active:scale-95"
+                    : "bg-gray-500 text-gray-300 cursor-not-allowed opacity-50"
+                }`}
+              >
+                Hapus
+              </button>
+            </div>
           </div>
 
-          {/* TABLE */}
+          {/* TABLE CONTAINER */}
           <div className="bg-white rounded-2xl shadow-inner flex-1 overflow-hidden">
             <div className="overflow-y-auto h-full">
               <table className="w-full border-collapse">
-                <thead className="sticky top-0 bg-gray-50">
-                  <tr>
-                    <th className="p-4 text-center">NO</th>
-                    <th className="p-4">Gambar</th>
-                    <th className="p-4">Nama</th>
-                    <th className="p-4">Deskripsi</th>
+                <thead className="sticky top-0 bg-gray-50 shadow-sm z-10">
+                  <tr className="text-[#1E1E6F] text-sm">
+                    <th className="p-4 text-center border-r">NO</th>
+                    <th className="p-4 border-r">Gambar</th>
+                    <th className="p-4 border-r">Nama</th>
+                    <th className="p-4 border-r text-left">Deskripsi</th>
                     <th className="p-4 text-center">Tools</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {loading && (
+                  {loading ? (
                     <tr>
-                      <td colSpan="5" className="p-6 text-center text-gray-400">
+                      <td colSpan="5" className="p-10 text-center text-gray-400">
                         Memuat data...
                       </td>
                     </tr>
-                  )}
-
-                  {!loading && dataJurusan.length === 0 && (
+                  ) : dataJurusan.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="p-6 text-center text-gray-400">
+                      <td colSpan="5" className="p-10 text-center text-gray-400">
                         Data jurusan kosong
                       </td>
                     </tr>
+                  ) : (
+                    dataJurusan.map((item, index) => (
+                      <tr key={item.id} className="border-b border-gray-100 hover:bg-blue-50 transition-colors">
+                        <td className="p-4 text-center text-sm border-r">{index + 1}</td>
+
+                        <td className="p-4 border-r">
+                          <div className="flex justify-center">
+                            <img
+                              src={`http://localhost:5000${item.gambar}`}
+                              alt={item.nama}
+                              className="w-48 h-28 object-cover rounded-lg shadow-sm border-2 border-[#1E1E6F]/20"
+                            />
+                          </div>
+                        </td>
+
+                        <td className="p-4 font-bold text-[#1E1E6F] border-r">
+                          {item.nama}
+                        </td>
+
+                        <td className="p-4 text-sm text-gray-500 max-w-xs border-r truncate">
+                          {item.deskripsi}
+                        </td>
+
+                        <td className="p-4">
+                          <div className="flex justify-center items-center gap-4">
+                            <button
+                              onClick={() => navigate(`/edit-jurusan/${item.id}`)}
+                              className="bg-blue-100 text-blue-700 px-4 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 hover:bg-blue-200 transition-all cursor-pointer shadow-sm"
+                            >
+                              <FaEdit /> EDIT
+                            </button>
+
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(item.id)}
+                              onChange={() => toggleSelect(item.id)}
+                              className="w-5 h-5 accent-[#1E1E6F] cursor-pointer"
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                   )}
-
-                  {dataJurusan.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-blue-50">
-                      <td className="p-4 text-center">{index + 1}</td>
-
-                      <td className="p-4">
-                        <img
-                          src={`http://localhost:5000${item.gambar}`}
-                          alt={item.nama}
-                          className="w-24 h-14 object-cover rounded-lg border"
-                        />
-                      </td>
-
-                      <td className="p-4 font-bold text-[#1E1E6F]">
-                        {item.nama}
-                      </td>
-
-                      <td className="p-4 text-sm text-gray-500 max-w-xs">
-                        {item.deskripsi}
-                      </td>
-
-                      <td className="p-4">
-                        <div className="flex justify-center items-center gap-4">
-                          <button
-                            onClick={() =>
-                              navigate(`/edit-jurusan/${item.id}`)
-                            }
-                            className="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-xs font-bold flex items-center gap-1"
-                          >
-                            <FaEdit /> EDIT
-                          </button>
-
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(item.id)}
-                            onChange={() => toggleSelect(item.id)}
-                            className="w-5 h-5 accent-[#1E1E6F]"
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
                 </tbody>
               </table>
             </div>

@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from "react"; // Tambahkan useEffect
+import React, { useState, useEffect } from "react"; 
 import { useNavigate } from "react-router-dom";
 import StatCard from "../components/statCard";
 import SideBar from "../components/sidebar";
 import defaultAvatar from "../assets/default-avatar.png";
 import { FiUser, FiLogOut, FiChevronDown } from "react-icons/fi";
-import axios from "axios"; // Tambahkan axios
+import axios from "axios";
 import { Bar } from "react-chartjs-2";
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
-  Title, 
-  Tooltip, 
-  Legend 
-} from 'chart.js';
+import { Chart as ChartJS,  CategoryScale,  LinearScale,  BarElement,  Title,  Tooltip,  Legend } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -23,53 +15,63 @@ export default function Dashboard() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const adminId = localStorage.getItem("adminId");
   const token = localStorage.getItem("token");
-
-  // State User
-  const [user, setUser] = useState({ 
-    username: "USER", 
-    foto: null 
+  const [user, setUser] = useState({ username: "USER", foto: null });
+  const [summary, setSummary] = useState({
+    totalJurusan: 0,
+    totalUser: 0,
+    totalLunas: 0,
+    chartLabels: [],
+    chartValues: []
   });
 
-  // Fetch data user terbaru agar foto sinkron setelah update
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       if (!adminId || !token) return;
       try {
-        const res = await axios.get(`http://localhost:5000/api/admin/${adminId}`, {
+        const resProfile = await axios.get(`http://localhost:5000/api/admin/profile/${adminId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setUser({
-          username: res.data.username,
-          foto: res.data.foto
+        setUser({ username: resProfile.data.username, foto: resProfile.data.foto });
+
+        const resSummary = await axios.get(`http://localhost:5000/api/admin/data-summary`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        // Opsional: Update localStorage agar data login tetap terbaru
-        localStorage.setItem("user", JSON.stringify(res.data));
+
+        setSummary({
+          totalJurusan: resSummary.data.totalJurusan,
+          totalUser: resSummary.data.totalUser,
+          totalLunas: resSummary.data.totalLunas,
+          chartLabels: resSummary.data.chartData.map(d => d.bulan),
+          chartValues: resSummary.data.chartData.map(d => d.total)
+        });
+
       } catch (err) {
-        console.error("Gagal mengambil data user:", err);
+        console.error("Gagal mengambil data:", err);
       }
     };
-    fetchUserData();
+    fetchData();
   }, [adminId, token]);
 
+  const chartData = {
+    labels: summary.chartLabels.length > 0 ? summary.chartLabels : ['Belum Ada Data'],
+    datasets: [
+      {
+        label: 'Penghasilan (Rp)',
+        data: summary.chartValues,
+        backgroundColor: '#1E1E6F',
+        borderRadius: 8,
+      },
+    ],
+  };
+
   const handleLogout = () => {
-    localStorage.clear(); // Hapus semua data
+    localStorage.clear();
     navigate("/login");
   };
 
-  // --- LOGIKA URL GAMBAR ---
-  // Jika foto ada, arahkan ke folder avatars di backend, jika tidak gunakan default
   const avatarUrl = user.foto 
     ? `http://localhost:5000/avatars/${user.foto}` 
     : defaultAvatar;
-
-  const chartData = {
-    labels: ['Figma', 'Sketch', 'XD', 'PS', 'AI', 'CorelDRAW', 'InDesign', 'Canva', 'Webflow', 'Affinity', 'Marker', 'Figma'],
-    datasets: [
-      { label: '2020', data: [22, 41, 82, 38, 39, 90, 89, 95, 23, 19, 81, 87], backgroundColor: '#a5b4fc' },
-      { label: '2021', data: [91, 38, 16, 48, 98, 50, 14, 20, 68, 80, 37, 96], backgroundColor: '#fca5a5' },
-      { label: '2022', data: [99, 65, 86, 18, 93, 33, 55, 36, 97, 78, 43, 42], backgroundColor: '#67e8f9' },
-    ],
-  };
 
   return (
     <div className="flex min-h-screen font-barrio bg-white">
@@ -89,7 +91,7 @@ export default function Dashboard() {
                   src={avatarUrl} 
                   alt="profile" 
                   className="w-full h-full object-cover" 
-                  onError={(e) => { e.target.src = defaultAvatar; }} // Fallback jika gambar error load
+                  onError={(e) => { e.target.src = defaultAvatar; }}
                 />
               </div>
               <div className="flex items-center space-x-2">
@@ -119,22 +121,31 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Konten sisa Dashboard tetap sama */}
         <div className="p-8">
           <h2 className="text-2xl font-bold mb-6 text-black tracking-tight uppercase">Ringkasan Data</h2>
+          
           <div className="flex space-x-6 mb-10">
-            <StatCard title="TOTAL JURUSAN" value="15" />
-            <StatCard title="TOTAL USER" value="15" />
+            <StatCard title="TOTAL JURUSAN" value={summary.totalJurusan} />
+            <StatCard title="TOTAL USER" value={summary.totalUser} />
+            <StatCard title="CALON SISWA" value={summary.totalLunas} />
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <Bar 
-              data={chartData} 
-              options={{ 
-                responsive: true, 
-                plugins: { legend: { position: 'bottom' } } 
-              }} 
-            />
+          <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+            <h3 className="text-lg font-bold mb-4 text-[#1E1E6F]">GRAFIK PENGHASILAN BULANAN</h3>
+            <div className="h-80">
+                <Bar 
+                  data={chartData} 
+                  options={{ 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: false } },
+                        x: { grid: { display: false } }
+                    }
+                  }} 
+                />
+            </div>
           </div>
         </div>
       </div>

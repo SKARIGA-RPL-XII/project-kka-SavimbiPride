@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'admin-' + uniqueSuffix + path.extname(file.originalname));
+        cb(null, 'jurusan-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 
@@ -28,10 +28,10 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({ 
+const uploadJus = multer({ 
     storage: storage,
     fileFilter: fileFilter,
     limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
-module.exports = upload;
+module.exports = uploadJus;
