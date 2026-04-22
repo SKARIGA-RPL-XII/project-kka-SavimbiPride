@@ -116,14 +116,14 @@ export default function Pembayaran() {
         {}, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       setNotif({ 
         show: true, 
         type: "success", 
         message: `Status ${item.username} Berhasil diperbarui!` 
       });
       fetchData();
-    } catch (err) {
+    } catch {
       setNotif({ 
         show: true, 
         type: "failed", 
