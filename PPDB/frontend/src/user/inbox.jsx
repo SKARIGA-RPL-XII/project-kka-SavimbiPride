@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaArrowLeft, FaEnvelope, FaEnvelopeOpen, FaCheckDouble } from "react-icons/fa";
 import axios from "axios";
 
 const Inbox = () => {
@@ -8,8 +9,8 @@ const Inbox = () => {
   const [dataPesan, setDataPesan] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
+  const token = sessionStorage.getItem("token");
+  const user = JSON.parse(sessionStorage.getItem("user"));
 
   const fetchInbox = async () => {
     if (!token || !user?.id) {
@@ -21,12 +22,9 @@ const Inbox = () => {
       const res = await axios.get(
         `http://localhost:5000/api/inbox/inbox/${user.id}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       setDataPesan(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Gagal mengambil inbox:", error.response?.data || error.message);
@@ -37,7 +35,7 @@ const Inbox = () => {
 
   useEffect(() => {
     fetchInbox();
-  }, [token, user?.id]); 
+  }, [token, user?.id]);
 
   const markAsReadLogic = async (pesan) => {
     if (pesan.is_read === 0 || pesan.is_read === "0") {
@@ -61,13 +59,7 @@ const Inbox = () => {
 
   const handleReadMessage = (pesan) => {
     setSelectedPesan(pesan);
-    markAsReadLogic(pesan); 
-  };
-
-  const handleMarkAsRead = () => {
-    if (selectedPesan) {
-      markAsReadLogic(selectedPesan);
-    }
+    markAsReadLogic(pesan);
   };
 
   const handleBack = () => {
@@ -79,50 +71,73 @@ const Inbox = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-[#000045] p-4">
-      <div className="bg-[#1a3a8a] rounded-2xl p-4 shadow-2xl h-[500px] w-full flex flex-col">
-
-        <header className="mb-4">
-          <p className="text-gray-400 text-xs mb-2">
-            {selectedPesan ? "pesan inbox" : "list inbox"}
-          </p>
+    <div className="flex justify-center items-center min-h-screen bg-[#080841] p-6 font-barrio">
+      <div className="bg-[#1E1E6F] rounded-[40px] p-8 shadow-2xl h-[650px] w-full max-w-4xl flex flex-col border border-white/10">
+        
+        {/* Header Section */}
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-white text-3xl tracking-widest uppercase italic font-black">
+              {selectedPesan ? "Detail Pesan" : "Kotak Masuk"}
+            </h2>
+            <p className="text-blue-300/60 text-sm uppercase tracking-[0.2em] mt-1 font-bold">
+              {selectedPesan ? "Pesan dari Agetha" : `${dataPesan.length} Pesan Tersedia`}
+            </p>
+          </div>
 
           <button
             onClick={handleBack}
-            className="bg-white text-black text-[10px] px-3 py-1 rounded-full font-bold hover:bg-gray-200 transition-colors cursor-pointer"
+            className="bg-white text-[#1E1E6F] px-6 py-2 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-gray-200 transition-all shadow-lg active:scale-95 flex items-center gap-2 cursor-pointer"
           >
-            ← kembali
+            <FaArrowLeft /> {selectedPesan ? "TUTUP" : "KEMBALI"}
           </button>
         </header>
 
-        <main className="bg-white rounded-2xl p-4 flex-grow shadow-inner overflow-y-auto">
-
+        {/* Content Area */}
+        <main className="bg-white rounded-[30px] p-6 flex-grow shadow-inner overflow-y-auto relative border-4 border-[#13134e]/10">
+          
           {loading ? (
-            <p className="text-center text-gray-500 text-sm">
-              Memuat pesan...
-            </p>
+            <div className="flex flex-col items-center justify-center h-full space-y-4">
+              <div className="w-12 h-12 border-4 border-blue-900 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-blue-900 font-bold animate-pulse">MEMUAT INBOX...</p>
+            </div>
           ) : !selectedPesan ? (
-
+            
             dataPesan.length === 0 ? (
-              <p className="text-center text-gray-500 text-sm">
-                Tidak ada pesan.
-              </p>
+              <div className="flex flex-col items-center justify-center h-full opacity-30">
+                <FaEnvelope size={80} className="mb-4 text-blue-900" />
+                <p className="text-blue-900 text-xl font-bold uppercase tracking-widest">Kosong</p>
+              </div>
             ) : (
               <div className="space-y-4">
                 {dataPesan.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => handleReadMessage(item)}
-                    className={`cursor-pointer group ${item.is_read === 0 || item.is_read === "0" ? "opacity-100" : "opacity-70"}`}
+                    className={`group flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all border-2 ${
+                      item.is_read === 0 || item.is_read === "0" 
+                        ? "bg-blue-50 border-blue-100 shadow-md" 
+                        : "bg-gray-50 border-transparent opacity-60 hover:opacity-100"
+                    }`}
                   >
-                    <span className="text-[#1a3a8a] text-[10px] font-bold block mb-1">
-                      dari : Agetha
-                    </span>
+                    <div className={`${item.is_read === 0 || item.is_read === "0" ? "text-blue-600" : "text-gray-400"}`}>
+                      {item.is_read === 0 || item.is_read === "0" ? <FaEnvelope size={24} /> : <FaEnvelopeOpen size={24} />}
+                    </div>
 
-                    <div className="bg-[#1a3a8a] h-10 w-full rounded-full flex items-center px-4 group-hover:opacity-90 transition-opacity">
-                      <span className="text-white text-xs truncate">
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-[#1E1E6F] text-lg font-black uppercase">Agetha</span>
+                        <span className="text-gray-400 text-[10px] font-bold italic">
+                           {item.create_at ? new Date(item.create_at).toLocaleDateString() : ""}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 text-sm font-bold truncate max-w-[500px]">
                         {item.tentang}
-                      </span>
+                      </p>
+                    </div>
+
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                       <span className="bg-[#1E1E6F] text-white text-[10px] px-3 py-1 rounded-full font-bold uppercase">Buka</span>
                     </div>
                   </div>
                 ))}
@@ -131,26 +146,34 @@ const Inbox = () => {
 
           ) : (
 
-            <div className="animate-fade-in">
-              <span className="text-[#1a3a8a] text-[10px] font-bold block mb-3">
-                dari : Agetha
-              </span>
+            <div className="p-4 animate-in fade-in zoom-in duration-300">
+              <div className="flex items-center gap-4 mb-8 border-b-2 border-gray-100 pb-6">
+                <div className="w-16 h-16 bg-[#1E1E6F] rounded-full flex items-center justify-center text-white shadow-xl">
+                  <FaEnvelope size={28} />
+                </div>
+                <div>
+                  <h3 className="text-[#1E1E6F] text-2xl font-black uppercase italic tracking-tighter leading-none">Dari: Agetha</h3>
+                  <p className="text-gray-400 text-xs font-bold mt-1 uppercase tracking-widest">
+                    Dikirim pada: {new Date(selectedPesan.create_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>
 
-              <div className="bg-gray-100 p-4 rounded-2xl rounded-tl-none w-[85%] shadow-sm">
-                <p className="text-gray-800 text-sm leading-relaxed">
-                  {selectedPesan.pesan}
+              <div className="bg-gray-50 p-8 rounded-[30px] rounded-tl-none border-2 border-gray-100 shadow-sm min-h-[200px]">
+                <p className="text-gray-800 text-lg font-bold leading-relaxed whitespace-pre-wrap italic">
+                  "{selectedPesan.pesan}"
                 </p>
+              </div>
 
-                <p className="text-gray-400 text-[10px] mt-3">
-                  {selectedPesan.create_at
-                    ? new Date(selectedPesan.create_at).toLocaleString()
-                    : ""}
-                </p>
-
+              <div className="mt-8 flex justify-between items-center">
+                <span className="flex items-center gap-2 text-green-600 font-bold text-xs uppercase tracking-widest">
+                  <FaCheckDouble /> Terverifikasi oleh Sistem
+                </span>
+                
                 {(selectedPesan.is_read === 0 || selectedPesan.is_read === "0") && (
                   <button
-                    onClick={handleMarkAsRead}
-                    className="mt-4 bg-[#1a3a8a] text-white text-[10px] px-3 py-1 rounded-full font-bold hover:opacity-90 transition cursor-pointer"
+                    onClick={() => markAsReadLogic(selectedPesan)}
+                    className="bg-[#1E1E6F] text-white text-xs px-6 py-3 rounded-xl font-black uppercase tracking-widest hover:bg-blue-800 transition shadow-lg shadow-blue-900/20 cursor-pointer"
                   >
                     Tandai Sudah Dibaca
                   </button>
@@ -158,7 +181,6 @@ const Inbox = () => {
               </div>
             </div>
           )}
-
         </main>
       </div>
     </div>

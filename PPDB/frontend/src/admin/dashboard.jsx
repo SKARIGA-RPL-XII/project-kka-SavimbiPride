@@ -13,13 +13,14 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 export default function Dashboard() {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const adminId = localStorage.getItem("adminId");
-  const token = localStorage.getItem("token");
+  const adminId = sessionStorage.getItem("adminId");
+  const token = sessionStorage.getItem("token");
   const [user, setUser] = useState({ username: "USER", foto: null });
   const [summary, setSummary] = useState({
     totalJurusan: 0,
     totalUser: 0,
     totalLunas: 0,
+    totalBerita: 0,
     chartLabels: [],
     chartValues: []
   });
@@ -41,6 +42,7 @@ export default function Dashboard() {
           totalJurusan: resSummary.data.totalJurusan,
           totalUser: resSummary.data.totalUser,
           totalLunas: resSummary.data.totalLunas,
+          totalBerita: resSummary.data.totalBerita,
           chartLabels: resSummary.data.chartData.map(d => d.bulan),
           chartValues: resSummary.data.chartData.map(d => d.total)
         });
@@ -65,7 +67,7 @@ export default function Dashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
+    sessionStorage.clear();
     navigate("/login");
   };
 
@@ -128,6 +130,7 @@ export default function Dashboard() {
             <StatCard title="TOTAL JURUSAN" value={summary.totalJurusan} />
             <StatCard title="TOTAL USER" value={summary.totalUser} />
             <StatCard title="CALON SISWA" value={summary.totalLunas} />
+            <StatCard title="TOTAL BERITA" value={summary.totalBerita} />
           </div>
 
           <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">

@@ -33,7 +33,7 @@ const OnlinePayment = () => {
       try {
         const res = await axios.get("http://localhost:5000/api/payment/data-pembayaran", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         });
 
@@ -82,7 +82,7 @@ const OnlinePayment = () => {
         { total },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
           },
         }
       );
@@ -165,8 +165,9 @@ const OnlinePayment = () => {
     }).format(angka);
   };
 
-  return (
-    <div className="min-h-screen bg-[#000045] flex flex-col items-center justify-center p-4">
+    return (
+    <div className="min-h-screen bg-[#000045] py-10 px-4 md:px-10 text-white font-sans">
+      
       {notif.open && (
         <Notif
           type={notif.type}
@@ -177,133 +178,138 @@ const OnlinePayment = () => {
         />
       )}
 
-      <div className="w-full max-w-4xl flex flex-col">
-        <div className="bg-[#1a3a8a] p-4 rounded-2xl shadow-2xl w-full flex flex-col">        
-          <header className="mb-4">
-            <button
-              onClick={() => navigate(-1)}
-              className="absolute top-6 left-6 z-10 bg-white text-black px-5 py-1.5 rounded-full text-[10px] font-black uppercase flex items-center gap-2 hover:bg-gray-200 hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
-            >
-              <FaArrowLeft className="inline mr-1" /> KEMBALI
-            </button>
-          </header>
+      <div className="max-w-6xl mx-auto bg-[#1e3a8a] rounded-[40px] p-6 md:p-10 shadow-2xl relative border border-white/10">
 
-          <div className="bg-gray-200 rounded-2xl p-6">
-            <h2 className="text-center font-bold tracking-[0.3em] text-[#1a3a8a] text-sm mb-6">
-              ONLINE
-            </h2>
+        {/* BACK BUTTON */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 z-10 bg-white text-black px-5 py-1.5 rounded-full text-[10px] font-black uppercase flex items-center gap-2 hover:bg-gray-200 hover:scale-105 transition-all duration-200 shadow-lg cursor-pointer"
+        >
+          <FaArrowLeft className="text-[9px]" />
+          kembali
+        </button>
 
-            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-6 justify-center items-start">
-              <div className="flex flex-col gap-4 w-full md:w-80">               
-                <div className="bg-[#1a3a8a] p-5 rounded-2xl text-white shadow-lg">
-                  <h3 className="text-center text-20 font-semibold mb-4 tracking-widest">Data Diri</h3>
-                  
-                  <div className="mb-3">
-                    <label className="text-[20px] ml-2 mb-1 block">Nama</label>
+        {/* INNER CARD */}
+        <div className="bg-[#D9D9D9] rounded-[32px] p-6 md:p-10 text-black relative mt-10 shadow-inner">
+
+          <h2 className="text-center font-black tracking-[0.3em] text-[#1a3a8a] text-sm mb-8 uppercase">
+            ONLINE PAYMENT
+          </h2>
+
+          <form
+            onSubmit={handleSubmit}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start"
+          >
+
+            {/* LEFT */}
+            <div className="space-y-6">
+
+              {/* DATA DIRI */}
+              <div className="bg-[#1a3a8a] p-6 rounded-3xl text-white shadow-xl border border-white/10">
+                <h3 className="text-center text-xs font-black uppercase tracking-[0.2em] mb-6 opacity-80">
+                  Data Diri
+                </h3>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase ml-3 mb-1 block opacity-60">
+                      Nama
+                    </label>
                     <input
                       type="text"
                       name="nama"
                       value={form.nama}
                       onChange={handleChange}
-                      className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none"
+                      className="bg-white/10 border border-white/20 w-full px-5 py-3 rounded-2xl text-white text-sm outline-none"
                     />
                   </div>
 
-                  <div className="mb-1">
-                    <label className="text-[20px] ml-2 mb-1 block">Email</label>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase ml-3 mb-1 block opacity-60">
+                      Email
+                    </label>
                     <input
                       type="email"
-                      name="email"
                       value={form.email}
                       readOnly
-                      className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none"
+                      className="bg-white/10 border border-white/20 w-full px-5 py-3 rounded-2xl text-white text-sm outline-none"
                     />
                   </div>
-                </div>
-
-                <div className="bg-[#1a3a8a] p-5 rounded-2xl text-white shadow-lg relative overflow-hidden">
-                  <div className="flex justify-between items-center mb-2">
-                    <p className="flex items-center gap-1 text-[15px] leading-tight">
-                      Selamat anda di terima di
-                      <FaArrowDown className="text-[20px] animate-bounce" />
-                    </p>
-                    <img 
-                      src={characterIcon} 
-                      alt="character" 
-                      className="w-30 h-30 object-contain"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    name="diterimaDi"
-                    value={form.diterimaDi}
-                    readOnly
-                    className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none"
-                  />
                 </div>
               </div>
 
-              {/* Kolom Kanan: Detail Bayar */}
-              <div className="bg-[#1a3a8a] p-6 rounded-2xl w-full md:w-96 text-white shadow-lg flex flex-col">
-                <h3 className="text-center text-xs font-semibold mb-6 tracking-widest">detail bayar</h3>
-
-                <div className="space-y-3 mb-6">
-                  <div>
-                    <label className="text-[15px] ml-2 mb-1 block uppercase">uang gedung</label>
-                    <input
-                      type="text"
-                      name="uangGedung"
-                      value={formatRupiah(form.uangGedung)}
-                      readOnly
-                      className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[15px] ml-2 mb-1 block uppercase">harga seragam</label>
-                    <input
-                      type="text"
-                      name="hargaSeragam"
-                      value={formatRupiah(form.hargaSeragam)}
-                      readOnly
-                      className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[15px] ml-2 mb-1 block uppercase">spp</label>
-                    <input
-                      type="text"
-                      name="spp"
-                      value={formatRupiah(form.spp)}
-                      readOnly
-                      className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t border-white/30 pt-4 mb-4">
-                  <label className="text-[15px] ml-2 mb-1 block uppercase font-bold">total</label>
-                  <input
-                    type="text"
-                    name="total"
-                    value={formatRupiah(total)}
-                    readOnly
-                    className="bg-white w-full px-4 py-1.5 rounded-full text-black text-sm outline-none font-bold"
+              {/* JURUSAN */}
+              <div className="bg-[#1a3a8a] p-6 rounded-3xl text-white shadow-xl relative overflow-hidden border border-white/10">
+                <div className="flex justify-between items-center mb-4">
+                  <p className="flex items-center gap-2 text-xs font-black uppercase tracking-tighter">
+                    Selamat anda di terima di
+                    <FaArrowDown className="text-[20px] animate-bounce" />
+                  </p>
+                  <img
+                    src={characterIcon}
+                    className="w-28 h-28 object-contain drop-shadow-lg"
                   />
                 </div>
 
+                <input
+                  type="text"
+                  value={form.diterimaDi}
+                  readOnly
+                  className="bg-white w-full px-5 py-3 rounded-2xl text-[#1a3a8a] font-bold text-sm shadow-inner outline-none"
+                />
+              </div>
+
+            </div>
+
+            {/* RIGHT */}
+            <div className="flex flex-col items-center space-y-6">
+
+              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md border-t-[10px] border-blue-600">
+
+                <p className="font-black text-center mb-6 text-xl tracking-tighter border-b-2 border-dashed border-gray-100 pb-4">
+                  DETAIL PEMBAYARAN
+                </p>
+
+                <div className="space-y-4 text-sm font-bold text-gray-700">
+
+                  <div className="flex justify-between">
+                    <span>Uang Gedung</span>
+                    <span>{formatRupiah(form.uangGedung)}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Seragam</span>
+                    <span>{formatRupiah(form.hargaSeragam)}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>SPP</span>
+                    <span>{formatRupiah(form.spp)}</span>
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-xl flex justify-between mt-4">
+                    <span className="font-black text-blue-900">TOTAL</span>
+                    <span className="font-black text-lg text-blue-900">
+                      {formatRupiah(total)}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* BUTTON */}
+              <div className="w-full max-w-md">
                 <button
                   type="submit"
-                  disabled={notif.open}
-                  className="w-full cursor-pointer bg-[#1e5c2e] hover:bg-green-700 py-2 rounded-lg font-bold text-xs tracking-widest transition-colors mt-auto"
+                  className="w-full bg-blue-700 hover:bg-blue-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg uppercase tracking-widest text-sm"
                 >
-                  Bayar
+                  Bayar Sekarang
                 </button>
               </div>
 
-            </form>
-          </div>
+            </div>
+
+          </form>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import "./App.css";
 import Login from "./auth/login";
 import Register from "./auth/register";
 import Landing from "./auth/landing";
+import Tentang from "./auth/tentang";
 
 // admin
 import Dashboard from "./admin/dashboard";
@@ -18,6 +19,9 @@ import Pembayaran from "./admin/pembayaran";
 import ListDataUser from "./admin/list_data_user";
 import DetailDataUser from "./admin/detail_data_user";
 import Calon from "./admin/calon";
+import Berita from "./admin/list_berita";
+import TambahBerita from "./admin/tambah_berita";
+import EditBerita from "./admin/edit_berita";
 
 // user 
 import Home from "./user/home";
@@ -35,9 +39,10 @@ export default function App() {
       <div className="flex flex-1 w-full overflow-hidden">
         <main className="flex-1 bg-gray-100 text-black overflow-hidden">
           <Routes>
-            <Route index element={<Landing />} />
+            <Route path="*" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/tentang" element={<Tentang />} />
 
             {/* admin */}
             <Route path="/dashboard" element={<Dashboard />} />
@@ -50,6 +55,9 @@ export default function App() {
             <Route path="/list-data-user" element={<ListDataUser />} />
             <Route path="/detail-data-user/:id" element={<DetailDataUser />} />
             <Route path="/calon" element={<Calon/>} />
+            <Route path="/list-berita" element={<Berita />} />
+            <Route path="/tambah-berita" element={<TambahBerita />} />
+            <Route path="/edit-berita/:id" element={<EditBerita />} />
             
             {/* User */}
             <Route path="/home/*" element={<Home />} />

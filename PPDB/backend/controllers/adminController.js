@@ -5,16 +5,9 @@ const db = require('../config/db');
 
 exports.dataSummary = async (req, res) => {
     try {
-        // 1. Hitung Total Jurusan
         const [jurusan] = await db.execute("SELECT COUNT(*) as total FROM jurusan");
-        
-        // 2. Hitung Total User (Calon Siswa Terdaftar)
         const [users] = await db.execute("SELECT COUNT(*) as total FROM users WHERE role = 'user'");
-
-        // 3. Hitung Calon Siswa dengan Status Pembayaran Lunas
         const [lunas] = await db.execute("SELECT COUNT(*) as total FROM pembayaran WHERE status = 'lunas'");
-
-        // 4. Ambil Data Penghasilan per Bulan (6 bulan terakhir) untuk Chart
         const [penghasilan] = await db.execute(`
             SELECT 
                 DATE_FORMAT(create_at, '%M') as bulan, 
@@ -25,11 +18,13 @@ exports.dataSummary = async (req, res) => {
             ORDER BY create_at ASC 
             LIMIT 6
         `);
+        const [berita] = await db.execute("SELECT COUNT(*) as total FROM berita");
 
         res.status(200).json({
             totalJurusan: jurusan[0].total,
             totalUser: users[0].total,
             totalLunas: lunas[0].total,
+            totalBerita: berita[0].total,
             chartData: penghasilan
         });
     } catch (error) {
@@ -54,24 +49,17 @@ exports.editAdmin = async (req, res) => {
     let newFoto = req.file ? req.file.filename : null;
 
     try {
-        // 1. Ambil data admin lama
         const [rows] = await db.query('SELECT foto FROM users WHERE id = ?', [id]);
         if (rows.length === 0) return res.status(404).json({ message: "Admin tidak ditemukan" });
         
         const oldFoto = rows[0].foto;
-
-        // 2. Logika Hapus Foto Lama (Hanya jika upload foto baru)
         if (newFoto && oldFoto) {
-            // Path diarahkan ke root/public/avatars/namafile
             const oldPath = path.join(__dirname, '../public/avatars', oldFoto);
-            
-            // Cek apakah file benar-benar ada sebelum dihapus agar tidak crash
             if (fs.existsSync(oldPath)) {
                 fs.unlinkSync(oldPath); 
             }
         }
 
-        // 3. Susun Query Update
         let sql = 'UPDATE users SET username = ?, email = ?';
         let params = [username, email];
 
@@ -98,9 +86,7 @@ exports.editAdmin = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error); // Tambahkan log untuk debug di console
-        
-        // Cleanup: Jika DB error tapi file sudah terlanjur terupload, hapus file baru tersebut
+        console.error(error);
         if (req.file) {
             const uploadedPath = path.join(__dirname, '../public/avatars', req.file.filename);
             if (fs.existsSync(uploadedPath)) fs.unlinkSync(uploadedPath);
@@ -175,12 +161,11 @@ exports.saveConfigHarga = async (req, res) => {
 
 exports.lunas = async (req, res) => {
     const { id } = req.params;
-    const { total_pembayaran } = req.body; 
 
     try {
         const [result] = await db.query(
-            'UPDATE pembayaran SET total_pembayaran = ?, status = "lunas" WHERE id = ?', 
-            [total_pembayaran, id]
+            'UPDATE pembayaran SET status = "lunas" WHERE id = ?', 
+            [id]
         );
 
         if (result.affectedRows === 0) {

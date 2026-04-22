@@ -34,7 +34,7 @@ export default function ProfileUser() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         const res = await axios.get(`${API_BASE_URL}/api/user/profile/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -114,7 +114,7 @@ export default function ProfileUser() {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const data = new FormData();
 
       Object.keys(formData).forEach((key) => {
@@ -130,7 +130,7 @@ export default function ProfileUser() {
         },
       });
 
-      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const storedUser = JSON.parse(sessionStorage.getItem("user"));
       
       const updatedUser = { 
         ...storedUser, 
@@ -138,7 +138,7 @@ export default function ProfileUser() {
         username: formData.username 
       };
 
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      sessionStorage.setItem("user", JSON.stringify(updatedUser));
 
       setNotif({ 
         show: true, 
@@ -149,7 +149,13 @@ export default function ProfileUser() {
       setConfirmPassword("");
 
       setTimeout(() => {
-        window.location.reload();
+        if (formData.password) {
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("user");
+          navigate("/login");
+        } else {
+          navigate("/home");
+        }
       }, 1500);
 
     } catch (error) {

@@ -8,19 +8,20 @@ import Notif from "../components/notif";
 export default function Pembayaran() {
   const [dataPembayaran, setDataPembayaran] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [notif, setNotif] = useState({ show: false, type: "", message: "" });
-  const [isEdit, setIsEdit] = useState(false);
+  const [notif, setNotif] = useState({ 
+    show: false, 
+    type: "", 
+    message: "", 
+    item: null
+  });
   const [showConfig, setShowConfig] = useState(false);
-  const [showLunasModal, setShowLunasModal] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState(null);
-  const [inputLunas, setInputLunas] = useState("");
   const [configHarga, setConfigHarga] = useState({
     uang_gedung: 0,
     harga_seragam: 0,
     spp: 0,
   });
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   const API_URL = "http://localhost:5000/api/admin";
 
   const fetchData = useCallback(async () => {
@@ -92,40 +93,45 @@ export default function Pembayaran() {
     }
   };
 
-  const openLunasModal = (item) => {
-    setSelectedPayment(item);
-    setInputLunas(item.total_harga || ""); 
-    setShowLunasModal(true);
+  const triggerConfirmLunas = (item) => {
+    setNotif({
+      show: true,
+      type: "confirm",
+      message: `Ubah status pembayaran ${item.username} menjadi LUNAS?`,
+      item: item // Simpan data item yang mau dieksekusi
+    });
   };
 
   const handleConfirmLunas = async () => {
-    if (!inputLunas || inputLunas <= 0) {
-      alert("Masukkan nominal pembayaran yang valid");
-      return;
-    }
+    const item = notif.item;
+    if (!item) return;
 
     try {
+      // Tutup notif confirm dulu agar tidak tumpang tindih
+      setNotif({ ...notif, show: false });
+      setLoading(true);
+      
       await axios.put(
-        `${API_URL}/verifikasi-bayar/${selectedPayment.id}`, 
-        { total_pembayaran: inputLunas }, 
+        `${API_URL}/verifikasi-bayar/${item.id}`, 
+        {}, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      setNotif({ show: true, type: "success", message: "Status Berhasil Diperbarui!" });
-      setShowLunasModal(false);
-      fetchData(); 
+      setNotif({ 
+        show: true, 
+        type: "success", 
+        message: `Status ${item.username} Berhasil diperbarui!` 
+      });
+      fetchData();
     } catch (err) {
-      setNotif({ show: true, type: "failed", message: "Gagal verifikasi pembayaran" });
+      setNotif({ 
+        show: true, 
+        type: "failed", 
+        message: "Gagal memperbarui status." 
+      });
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const formatRupiah = (value) => {
-    if (!value) return "Rp 0";
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(value);
   };
 
   return (
@@ -135,6 +141,8 @@ export default function Pembayaran() {
           <Notif 
             type={notif.type} 
             message={notif.message} 
+            onConfirm={handleConfirmLunas}
+            onCancel={() => setNotif({ ...notif, show: false })} 
             onClose={() => setNotif({ ...notif, show: false })} 
           />
         )}
@@ -204,59 +212,9 @@ export default function Pembayaran() {
 
               <button 
                 onClick={handleSaveConfig}
-                className={`w-full border-2 border-black text-white py-3 text-xl font-black uppercase tracking-widest cursor-pointer transition-all 
-                  ${isEdit ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700"}`}
-              >
+                className="w-full border-2 border-black text-white py-3 text-xl font-black uppercase tracking-widest cursor-pointer transition-all">
                 Simpan Perubahan
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showLunasModal && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border-4 border-[#1E1E6F]">
-            <div className="bg-[#1E1E6F] p-4 text-center">
-              <h3 className="text-white font-black uppercase tracking-widest">Konfirmasi Pelunasan</h3>
-            </div>
-            
-            <div className="p-6 flex flex-col gap-4">
-              <div className="text-center">
-                <p className="text-[10px] text-gray-400 font-bold uppercase">Nama Siswa</p>
-                <p className="text-lg font-black text-[#1E1E6F] uppercase">{selectedPayment?.username}</p>
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-black text-gray-500 uppercase">Input Nominal Pembayaran</label>
-                <div className="relative">
-                  <input 
-                    type="text"
-                    value={inputLunas ? formatRupiah(inputLunas) : ""}
-                    onChange={(e) => {
-                      const rawValue = e.target.value.replace(/[^0-9]/g, "");
-                      setInputLunas(rawValue);
-                    }}
-                    placeholder="Contoh: 1.500.000"
-                    className="w-full border-4 border-gray-100 rounded-2xl p-4 focus:border-green-500 outline-none font-black text-2xl text-green-600 transition-all text-center"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-2">
-                <button 
-                  onClick={() => { setShowLunasModal(false); setInputLunas(""); }}
-                  className="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-400 font-bold hover:bg-gray-50 cursor-pointer transition-all"
-                >
-                  BATAL
-                </button>
-                <button 
-                  onClick={handleConfirmLunas}
-                  className="flex-1 py-3 rounded-xl bg-green-600 text-white font-black hover:bg-green-700 shadow-[0_4px_0_0_#15803d] cursor-pointer active:translate-y-1 active:shadow-none transition-all"
-                >
-                  LUNASKAN
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -327,11 +285,11 @@ export default function Pembayaran() {
                           <div className="flex justify-center">
                             <button
                               disabled={item.status === "lunas"}
-                              onClick={() => openLunasModal(item)}
+                              onClick={() => triggerConfirmLunas(item)}
                               className={`px-6 py-1.5 rounded-full text-[10px] font-black transition-all ${
                                 item.status === "lunas"
                                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                  : "bg-green-600 text-white hover:bg-green-700 cursor-pointer shadow-md"
+                                  : "bg-green-600 text-white hover:bg-green-700 cursor-pointer shadow-md active:scale-95"
                               }`}
                             >
                               <FaCheckCircle className="inline mr-1" /> LUNAS

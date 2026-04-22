@@ -72,7 +72,7 @@ export default function DetailDataUser() {
 
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
 
         const res = await fetch(
           `${API_BASE_URL}/api/list_data_user/DataUser/${id}`,
@@ -151,7 +151,7 @@ export default function DetailDataUser() {
     setNotif({ ...notif, show: false });
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await fetch(
         `${API_BASE_URL}/api/list_data_user/DataUser/${id}/status`,
         {
@@ -195,7 +195,7 @@ export default function DetailDataUser() {
     }
 
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       const updateRes = await fetch(
         `${API_BASE_URL}/api/list_data_user/DataUser/${id}/status`,
@@ -700,7 +700,7 @@ export default function DetailDataUser() {
                       </button>
                       <button
                         onClick={handleDownload}
-                        className="bg-gray-100 hover:bg-white text-[#1E1E6F] px-6 py-2 rounded-xl flex items-center gap-2 font-bold"
+                        className="bg-gray-100 hover:bg-white text-[#1E1E6F] px-6 py-2 rounded-xl flex items-center gap-2 font-bold cursor-pointer"
                       >
                         <FaDownload /> DOWNLOAD
                       </button>

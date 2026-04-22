@@ -17,7 +17,7 @@ export default function ListJurusan() {
   });
 
   const API_URL = "http://localhost:5000/api/jurusan";
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const fetchJurusan = async () => {
     try {
@@ -163,8 +163,12 @@ export default function ListJurusan() {
                           <div className="flex justify-center">
                             <img
                               src={`http://localhost:5000${item.gambar}`}
-                              alt={item.nama}
+                              alt={item.judul}
                               className="w-48 h-28 object-cover rounded-lg shadow-sm border-2 border-[#1E1E6F]/20"
+                              onError={(e) => {
+                                e.target.onerror = null; 
+                                e.target.src = "https://placehold.co/150x150?text=No+Image";
+                              }}
                             />
                           </div>
                         </td>

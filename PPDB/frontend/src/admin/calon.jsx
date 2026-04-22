@@ -16,7 +16,7 @@ export default function ListUser() {
   const daftarJurusan = [...new Set(dataUsers.map((u) => u.jurusan))].filter(Boolean);
 
   const API_URL = "http://localhost:5000/api/list_user/calon";
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const fetchUsers = async () => {
     try {

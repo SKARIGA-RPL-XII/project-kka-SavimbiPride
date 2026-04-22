@@ -73,3 +73,28 @@ exports.login = async (req, res) => {
         return res.status(500).json({ message: "Terjadi kesalahan pada server." });
     }
 };
+
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: "Email wajib diisi!" });
+    }
+
+    try {
+        const [users] = await db.query('SELECT username FROM users WHERE email = ?', [email]);
+
+        if (users.length === 0) {
+            return res.status(404).json({ message: "Email tidak ditemukan di database kami." });
+        }
+
+        return res.status(200).json({
+            message: "Email ditemukan, permintaan reset sedang diproses.",
+            username: users[0].username 
+        });
+
+    } catch (error) {
+        console.error("Forgot Password Error:", error);
+        return res.status(500).json({ message: "Terjadi kesalahan pada server." });
+    }
+};

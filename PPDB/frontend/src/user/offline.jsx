@@ -9,7 +9,7 @@ const OfflinePayment = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   const [notif, setNotif] = useState({
     show: false,
@@ -27,7 +27,7 @@ const OfflinePayment = () => {
     try {
       const res = await axios.get(
         "http://localhost:5000/api/payment/data-pembayaran-offline",
-        {
+        { 
           headers: { Authorization: `Bearer ${token}` }
         }
       );

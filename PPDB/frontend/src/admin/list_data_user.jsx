@@ -14,7 +14,7 @@ export default function ListDataUser() {
   const [searchTerm, setSearchTerm] = useState(""); // State untuk pencarian
   const [notif, setNotif] = useState({ show: false, type: "", message: "" });
 
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
   const API_URL = "http://localhost:5000/api/list_data_user";
 
   const fetchData = useCallback(async () => {

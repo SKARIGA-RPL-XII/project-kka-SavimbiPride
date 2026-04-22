@@ -12,6 +12,7 @@ export default function SideBar() {
     { name: "DATA USER", path: "/list-data-user" },
     { name: "PEMBAYARAN", path: "/pembayaran" },
     { name: "CALON SISWA", path: "/calon" },
+    { name: "LIST BERITA", path: "/list-berita" },
   ];
 
   return (
@@ -20,8 +21,8 @@ export default function SideBar() {
       <div className="flex items-center space-x-2 px-6 mb-12">
         <img src={logoFpe} alt="Logo" className="w-10 h-10 object-contain bg-white rounded-full p-1" />
         <div className="leading-none">
-          <h2 className="text-[10px] font-bold tracking-tighter">FOCUS POINT</h2>
-          <p className="text-[7px] tracking-widest opacity-80 uppercase">EDUCATION</p>
+          <h2 className="text-[20px] font-bold tracking-tighter">FOCUS POINT</h2>
+          <p className="text-[10px] tracking-widest opacity-80 uppercase">EDUCATION</p>
         </div>
       </div>
 

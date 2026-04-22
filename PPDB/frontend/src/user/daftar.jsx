@@ -69,7 +69,7 @@ export default function Daftar() {
 
   const fetchProfile = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/api/user/data`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -259,7 +259,7 @@ export default function Daftar() {
   // ================= SAVE =================
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (isLocked) {
         return setNotif({
           show: true,
@@ -334,7 +334,7 @@ export default function Daftar() {
         `http://localhost:5000/api/pdf/bukti`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${sessionStorage.getItem("token")}`
           }
         }
       );
